@@ -38,18 +38,17 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
         .animate(CurvedAnimation(
             parent: _animationControllerYellow, curve: Curves.easeInOutCirc));
 
-    _animationControllerBlue.addStatusListener((status) {
-      if (_animationControllerBlue.status == AnimationStatus.dismissed &&
-          _animationControllerYellow.status == AnimationStatus.completed) {
+    _animationControllerBlue.addListener(() {
+      if (_animationControllerBlue.value >= 0.5 &&
+          _animationControllerYellow.value == 0) {
+        _animationControllerYellow.forward();
+      }
+      if (_animationControllerBlue.value <= 0.5 &&
+          _animationControllerYellow.value == 1) {
         _animationControllerYellow.reverse();
       }
     });
-    _animationControllerBlue.addStatusListener((status) {
-      if (_animationControllerBlue.status == AnimationStatus.completed &&
-          _animationControllerYellow.status == AnimationStatus.dismissed) {
-        _animationControllerYellow.forward();
-      }
-    });
+
     super.initState();
   }
 
