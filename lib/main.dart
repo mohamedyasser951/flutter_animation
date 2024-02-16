@@ -13,7 +13,6 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
   late AnimationController _animationControllerBlue;
-  late AnimationController _animationControllerYellow;
 
   late Animation<AlignmentGeometry> blueBallAlign;
   late Animation<AlignmentGeometry> yellowBallAlign;
@@ -25,31 +24,17 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
         duration: const Duration(seconds: 1),
         reverseDuration: const Duration(seconds: 4));
 
-    _animationControllerYellow = AnimationController(
-        vsync: this,
-        duration: const Duration(seconds: 1),
-        reverseDuration: const Duration(seconds: 4));
-
     blueBallAlign = Tween<AlignmentGeometry>(
             begin: Alignment.topCenter, end: Alignment.bottomCenter)
         .animate(_animationControllerBlue);
-    yellowBallAlign = Tween<AlignmentGeometry>(
-            begin: Alignment.centerLeft, end: Alignment.centerRight)
-        .animate(CurvedAnimation(
-            parent: _animationControllerYellow, curve: Curves.easeInOutCirc));
-
-    _animationControllerBlue.addListener(() {
-      if (_animationControllerBlue.value >= 0.5 &&
-          _animationControllerYellow.value == 0) {
-        _animationControllerYellow.forward();
-      }
-      if (_animationControllerBlue.value <= 0.5 &&
-          _animationControllerYellow.value == 1) {
-        _animationControllerYellow.reverse();
-      }
-    });
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _animationControllerBlue.dispose();
+    super.dispose();
   }
 
   @override
@@ -73,24 +58,79 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
     );
   }
 
+  void statusListenerFunction(AnimationStatus animationStatus) {
+    print("Animation staus $animationStatus ===================");
+  }
+
+  void listnerFunction() {
+    print(
+        "Animation Value ${_animationControllerBlue.value}=====================");
+  }
+
   Widget buttonsWidgets() {
-    return Wrap(
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ElevatedButton(
-            onPressed: () => _animationControllerBlue.forward(),
+            onPressed: () {
+              _animationControllerBlue.value == 0
+                  ? _animationControllerBlue.forward()
+                  : _animationControllerBlue.reverse();
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
             ),
             child: const Text("Start")),
         const SizedBox(
-          width: 20,
+          height: 20,
         ),
-        ElevatedButton(
-            onPressed: () => _animationControllerBlue.reverse(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-            ),
-            child: const Text("Reverse")),
+        Wrap(
+          spacing: 10.0,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  _animationControllerBlue
+                      .addStatusListener(statusListenerFunction);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                ),
+                child: const Text("Add Status Listener")),
+            ElevatedButton(
+                onPressed: () {
+                  _animationControllerBlue
+                      .removeStatusListener(statusListenerFunction);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                ),
+                child: const Text("Remove Status Listener")),
+          ],
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Wrap(
+          spacing: 10.0,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  blueBallAlign.addListener(listnerFunction);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                ),
+                child: const Text("Add Value Listener")),
+            ElevatedButton(
+                onPressed: () {
+                  blueBallAlign.removeListener(listnerFunction);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                ),
+                child: const Text("Remove Value Listener")),
+          ],
+        ),
       ],
     );
   }
@@ -103,11 +143,6 @@ class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
             alignment: blueBallAlign,
             child: const CircleAvatar(backgroundColor: Colors.blue, radius: 25),
           ),
-          AlignTransition(
-            alignment: yellowBallAlign,
-            child:
-                const CircleAvatar(backgroundColor: Colors.yellow, radius: 25),
-          )
         ],
       ),
     );
